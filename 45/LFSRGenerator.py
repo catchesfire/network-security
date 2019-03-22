@@ -1,5 +1,5 @@
 
-class LFSR:
+class LFSR  :
 
     def generate_blocks(self, polynomial, seed):
         c = polynomial
