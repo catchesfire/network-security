@@ -12,7 +12,8 @@ class CAutokey:
         while 1:
             if exitloop:
                 break
-            y = []
+            y_out = bytearray()
+
             seek_value = seek_counter * -8192
             if seek_value < -file_size:
                 temp_seek = f.tell() - 8192
@@ -41,23 +42,32 @@ class CAutokey:
             reg = seed
 
             for i in range(len(input)):
-                y = 0
-                # y to wynik xora skladnikow wieloianu (wewnetrzny xor)
-                for j in range(len(polynomial)):
-                    if c[j] == '1':
-                        y += int(reg[j])
-                # dodajemy skladnik x i xorujemy
-                y = (y + int(input[i])) % 2
+                onne_str = "{:08b}".format(input[i])
+                temp_byte = ""
+                for k in range(8):
 
-                #save y moze sie pojawic
-                f2.write(y.to_bytes(1, 'big'))
+                    y = 0
+                    # y to wynik xora skladnikow wieloianu (wewnetrzny xor)
+                    for j in range(len(polynomial)):
+                        if c[j] == '1':
+                            y += int(reg[j])
+                    # dodajemy skladnik x i xorujemy
+                    y = int(y + int(onne_str[k])) % 2
+                    temp_byte += str(y)
 
-                tmp = str(y)
-                #zatrzasniecie nowego stanu
-                for j in range(len(reg) -1):
-                    tmp += reg[j]
-                reg = tmp
+                    tmp = str(y)
+                    #zatrzasniecie nowego stanu
+                    for j in range(len(reg) -1):
+                        tmp += reg[j]
+                    reg = tmp
 
+                #save y
+
+                int_byte = int(temp_byte, 2)
+                y_out.append(int_byte)
+                # f2.write(y.to_bytes(1, 'big'))
+            for i in range(len(y_out)):
+                f2.write(y_out[i].to_bytes(1, 'big'))
 
 
 
@@ -69,6 +79,7 @@ class CAutokey:
         counter = 0
         while 1:
             y = []
+            y_out = bytearray()
 
             byte_s = f.read(8192)
             if not byte_s:
@@ -83,22 +94,33 @@ class CAutokey:
 
             reg = seed
             for i in range(len(input)):
-                y = 0
-                # y to wynik xora skladnikow wieloianu (wewnetrzny xor)
-                for j in range(len(polynomial)):
-                    if c[j] == '1':
-                        y += int(reg[j])
-                # dodajemy skladnik x i xorujemy
-                y = (y + int(input[i])) % 2
+                onne_str = "{:08b}".format(input[i])
+                temp_byte = ""
+                for k in range(8):
 
-                #save y moze sie pojawic
-                f2.write(y.to_bytes(1, 'big'))
+                    y = 0
+                    # y to wynik xora skladnikow wieloianu (wewnetrzny xor)
+                    for j in range(len(polynomial)):
+                        if c[j] == '1':
+                            y += int(reg[j])
+                    # dodajemy skladnik x i xorujemy
+                    y = int(y + int(onne_str[k])) % 2
+                    temp_byte += str(y)
 
-                tmp = str(input[i])
-                #zatrzasniecie nowego stanu
-                for j in range(len(reg) -1):
-                    tmp += reg[j]
-                reg = tmp
+                    tmp = str(onne_str[k])
+                    #zatrzasniecie nowego stanu
+                    for j in range(len(reg) -1):
+                        tmp += reg[j]
+                    reg = tmp
+
+                #save y
+                # f2.write(y.to_bytes(1, 'big'))
+                int_byte = int(temp_byte, 2)
+                y_out.append(int_byte)
+                # f2.write(y.to_bytes(1, 'big'))
+            for i in range(len(y_out)):
+                f2.write(y_out[i].to_bytes(1, 'big'))
+
 
         f.close()
         f2.close()

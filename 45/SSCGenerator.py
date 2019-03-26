@@ -9,10 +9,11 @@ class SSC:
         counter = 0
         seek_counter = 1
         exitloop = False
+        input2 = []
         while 1:
             if exitloop:
                 break
-            y = []
+            y = bytearray()
             seek_value = seek_counter * -8192
             if seek_value < -file_size:
                 temp_seek = f.tell() - 8192
@@ -36,16 +37,31 @@ class SSC:
             #clean
             for j in range(len(byte_s) - 1 , -1, -1):
                 if byte_s[j] != "\n" and byte_s[j] != "\r" and byte_s[j] != "\r\n":
+                    # input2.append("{:02x}".format(byte_s[j]))
                     input.append(byte_s[j])
 
             for j in range(len(input)):
-                lfsr_elem = lfsr_blocks[counter % len(lfsr_blocks)]
-                counter += 1
 
-                y.append(((input[j] + int(lfsr_elem[0])) % 2).to_bytes(1, 'big'))
+
+                onne_str = "{:08b}".format(input[j])
+                temp_byte = ""
+                for k in range(8):
+                    lfsr_elem = lfsr_blocks[counter % len(lfsr_blocks)]
+                    if len(onne_str) > k:
+                        counter += 1
+                        result_xor = int(int(onne_str[k]) + int(lfsr_elem[0])) % 2
+                        temp_byte += str(result_xor)
+
+                int_byte = int(temp_byte, 2)
+
+                y.append(int_byte)
+
+
+
+                # y.append(((sum + int(lfsr_elem[0])) % 2).to_bytes(1, 'big'))
 
             for i in range(len(y)):
-                f2.write(y[i])
+                f2.write(y[i].to_bytes(1, 'big'))
 
         f.close()
         f2.close()
@@ -58,7 +74,7 @@ class SSC:
         f2 = open('temp_file.bin', 'wb')
         counter = 0
         while 1:
-            y = []
+            y = bytearray()
 
             byte_s = f.read(8192)
             if not byte_s:
@@ -68,12 +84,27 @@ class SSC:
             # reverse and clean
             for j in range(len(byte_s)):
                 if byte_s[j] != "\n" and byte_s[j] != "\r" and byte_s[j] != "\r\n":
+
                     input.append(byte_s[j])
 
             for j in range(len(input)):
-                lfsr_elem = lfsr_blocks[counter % len(lfsr_blocks)]
-                counter += 1
-                f2.write(((input[j] + int(lfsr_elem[0])) % 2).to_bytes(1, 'big'))
+
+                onne_str = "{:08b}".format(input[j])
+                temp_byte = ""
+
+                for k in range(8):
+                    lfsr_elem = lfsr_blocks[counter % len(lfsr_blocks)]
+                    if len(onne_str) > k:
+                        counter += 1
+                        result_xor = int(int(onne_str[k]) + int(lfsr_elem[0])) % 2
+                        temp_byte += str(result_xor)
+
+                int_byte = int(temp_byte, 2)
+                y.append(int_byte)
+
+            for i in range(len(y)):
+                f2.write(y[i].to_bytes(1, 'big'))
+
 
         f.close()
         f2.close()
