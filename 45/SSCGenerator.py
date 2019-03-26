@@ -16,7 +16,7 @@ class SSC:
                 counter += 1
                 y.append(((byte_s[j] + int(lfsr_elem[0])) % 2).to_bytes(1, 'big'))
 
-            print("out sscgenerator: ", y)
+            #print("out sscgenerator: ", y)
             for i in range(len(y)):
                 f2.write(y[i])
 
