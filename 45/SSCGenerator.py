@@ -146,3 +146,14 @@ class SSC:
                     f2.write(byte_s[i].to_bytes(1, 'big'))
             f.close()
             f2.close()
+
+from PyQt5.QtWidgets import QApplication
+import views
+import sys
+
+if __name__ == "__main__":
+
+    app = QApplication(sys.argv)
+    window = views.SSCView()
+    window.show()
+    sys.exit(app.exec_())

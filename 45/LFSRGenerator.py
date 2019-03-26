@@ -18,3 +18,14 @@ class LFSR:
             out.append(block)
 
         return out
+
+from PyQt5.QtWidgets import QApplication
+import views
+import sys
+
+if __name__ == "__main__":
+
+    app = QApplication(sys.argv)
+    window = views.LFSRView()
+    window.show()
+    sys.exit(app.exec_())
