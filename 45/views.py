@@ -87,6 +87,7 @@ class SSCView(QWidget):
         self.setWindowTitle("Synchronous Stream Cipher")
     
     def openFileNameDialog(self):
+        self.source_file_path = None
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         fileName, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "","All Files (*);;Python Files (*.py)", options=options)
@@ -122,17 +123,31 @@ class SSCView(QWidget):
             ssc = SSC()
             lfsr = LFSR()
             blocks = lfsr.generate_blocks(self.polynomial_le.text(), self.seed_le.text())
-            ssc.encrypt_n_decrypt(blocks, self.source_file_path, self.destination_file_path)
+            # ssc.encrypt_n_decrypt(blocks, self.source_file_path, self.destination_file_path)
+            ssc.encrypt(blocks, self.source_file_path, self.destination_file_path)
 
             result = "Ostatnie bity z pliku zrodlowego:\n"
-            result += self.read_last_n_bits(6, self.source_file_path) + "\n\n"
+            result += self.read_last_n_bits(3, self.source_file_path) + "\n\n"
             result += "Ostatnie bity z pliku docelowego:\n"
-            result += self.read_last_n_bits(6, self.destination_file_path)
+            result += self.read_last_n_bits(3, self.destination_file_path)
 
             self.result_pte.setPlainText(result)
     
     def decrypt(self):
-        pass
+        self.saveFileDialog()
+        if self.destination_file_path and self.source_file_path:
+            ssc = SSC()
+            lfsr = LFSR()
+            blocks = lfsr.generate_blocks(self.polynomial_le.text(), self.seed_le.text())
+            # ssc.encrypt_n_decrypt(blocks, self.source_file_path, self.destination_file_path)
+            ssc.decrypt(blocks, self.source_file_path, self.destination_file_path)
+
+            result = "Ostatnie bity z pliku zrodlowego:\n"
+            result += self.read_last_n_bits(3, self.source_file_path) + "\n\n"
+            result += "Ostatnie bity z pliku docelowego:\n"
+            result += self.read_last_n_bits(3, self.destination_file_path)
+
+            self.result_pte.setPlainText(result)
 
     def generate(self):
         #Todo: Sprawdzić, czy podany wielomian i seed jest w odpowiednim formacie.
