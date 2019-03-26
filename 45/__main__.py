@@ -16,10 +16,13 @@ from LFSRGenerator import LFSR
 # encrypted = cauto.encrypt("1001", "1101",'test.bin', 'out.bin')
 # decrypted = cauto.decrypt("1001", "1101",'out.bin', 'test11.bin')
 from PyQt5.QtWidgets import QApplication
-from views import LFSRView, MainView, SSCView
+from views import CAutoKeyView, LFSRView, MainView, SSCView
 import sys
 
 app = QApplication(sys.argv)
-window = SSCView()
+# window = LFSRView()
+#window = CAutoKeyView()
+# window = SSCView()
+window = MainView()
 window.show()
 sys.exit(app.exec_())
