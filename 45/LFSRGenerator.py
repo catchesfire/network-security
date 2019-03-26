@@ -4,7 +4,6 @@ class LFSR  :
     def generate_blocks(self, polynomial, seed):
         c = polynomial
         degree = len(c)
-        print(c, degree)
 
         out = [seed]
 
