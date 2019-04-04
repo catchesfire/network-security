@@ -114,7 +114,7 @@ class DES:
 
         return hex_array
 
-    def run(self):
+    def run(self, decrypt):
         with open(self.source_file_name, "rb") as source_file, open(self.destination_file_name, "wb") as destination_file:
             while 1:
                 byte_s = source_file.read(32768)
@@ -125,14 +125,18 @@ class DES:
                 binary_source_block = self.hex_to_binary(byte_s)
                 binary_destination_block = []
 
+                if len(binary_source_block) % 8:
+                    missing = len(binary_source_block) % 8
+                    for i in range(8-missing):
+                        binary_source_block.append("00000000")
+
                 for i in range(0, len(binary_source_block), 8):
-                    # TODO implementacja paddingu
 
                     input_64_bit = "".join(binary_source_block[i:i+8])
                     # TODO przekazac klucz z zewnatrz
                     subkeys = self.generate_subkeys("E0FAE0FEB1F4F8FE")
 
-                    output_64_bit = self.des_algorithm(input_64_bit, subkeys)
+                    output_64_bit = self.des_algorithm(input_64_bit, subkeys, decrypt)
                     for j in range(8):
                         binary_destination_block.append(output_64_bit[j*8:j*8+8])
                 
@@ -141,19 +145,21 @@ class DES:
                 for byte in byte_output:
                     destination_file.write(byte.to_bytes(1, "big"))
 
-    def des_algorithm(self, input_blok, subkeyes):
+    def des_algorithm(self, input_blok, subkeyes, decrypt):
         input = self.permutate(input_blok, self.IP)
         left_half= input[:32]
         right_half= input[32:]
-
         for i in range(16):
+            if decrypt:
+                feistel = self.feistel_function(right_half, subkeyes[-(i+1)])
+            else:
+                feistel = self.feistel_function(right_half, subkeyes[i])
 
-            feistel = self.feistel_function(right_half, subkeyes[i])
             right = right_half
             right_half = self.xor(feistel, left_half)
             left_half = right
 
-        out_to_perm = left_half + right_half # TODO sprawdzic czy nie odwrotnie trzeba zlaczyć
+        out_to_perm = right_half + left_half
         return self.permutate(out_to_perm, self.IP_INVERSE)
 
     def feistel_function(self, input, key):
@@ -168,8 +174,8 @@ class DES:
         for i in range(len(s_blocks)):
             block = s_blocks[i]
 
-            row_no = int(block[0]) + int(block[5])
-            col_no = int(block[1]) + int(block[2]) + int(block[3]) + int(block[4])
+            row_no = int(block[0] + block[5], 2)
+            col_no = int(block[1] + block[2] + block[3] + block[4], 2)
 
             s_box = self.SBOXES[i]
 
@@ -205,6 +211,7 @@ class DES:
             key = left_half + right_half
             subkey = self.permutate(key, self.PC2)
             subkeys.append(subkey)
+        return subkeys
 
     def left_shift(self, input, shift_val):
         shifted = input[shift_val:]
@@ -215,10 +222,15 @@ class DES:
     def permutate(self, source, permutation_order):
         out = ""
         for order in permutation_order:
+            if len(source) < order:
+                print("wywala", len(source))
+                print(permutation_order)
             out += source[order-1]
         return out
 
 
 if __name__ == "__main__":
-    des = DES("68/test.bin", "68/out.bin")
-    des.generate_subkeys("E0FAE0FEB1F4F8FE")
+    des = DES("test.bin", "out.bin")
+    des.run(decrypt=False)
+    des = DES("out.bin", "test11.bin")
+    des.run(decrypt=True)
