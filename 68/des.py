@@ -114,7 +114,7 @@ class DES:
 
         return hex_array
 
-    def run(self, decrypt):
+    def run(self, decrypt, key):
         with open(self.source_file_name, "rb") as source_file, open(self.destination_file_name, "wb") as destination_file:
             while 1:
                 byte_s = source_file.read(32768)
@@ -133,8 +133,7 @@ class DES:
                 for i in range(0, len(binary_source_block), 8):
 
                     input_64_bit = "".join(binary_source_block[i:i+8])
-                    # TODO przekazac klucz z zewnatrz
-                    subkeys = self.generate_subkeys("E0FAE0FEB1F4F8FE")
+                    subkeys = self.generate_subkeys(key)
 
                     output_64_bit = self.des_algorithm(input_64_bit, subkeys, decrypt)
                     for j in range(8):
@@ -208,6 +207,8 @@ class DES:
             right_half = key[28:]
             left_half = self.left_shift(left_half, self.LSHIFT_MAP[i])
             right_half = self.left_shift(right_half, self.LSHIFT_MAP[i])
+            x = len(left_half)
+            y = len(right_half)
             key = left_half + right_half
             subkey = self.permutate(key, self.PC2)
             subkeys.append(subkey)
@@ -216,21 +217,53 @@ class DES:
     def left_shift(self, input, shift_val):
         shifted = input[shift_val:]
         for i in range(shift_val):
-            shifted += "0"
+            shifted += input[i]
         return shifted
 
     def permutate(self, source, permutation_order):
         out = ""
         for order in permutation_order:
-            if len(source) < order:
-                print("wywala", len(source))
-                print(permutation_order)
             out += source[order-1]
         return out
 
 
 if __name__ == "__main__":
-    des = DES("test.bin", "out.bin")
-    des.run(decrypt=False)
-    des = DES("out.bin", "test11.bin")
-    des.run(decrypt=True)
+    #"E0FAE0FEB1F4F8FE"
+    #0E329232EA6D0D73
+
+    des = DES('in.txt', 'inout.txt')
+    des.run(decrypt=False, key='133457799BBCDFF1')
+
+
+    # x='0'
+    # while (1):
+    #
+    #     print("DES")
+    #     print("1.Szyfrowanie")
+    #     print("2.Deszyfrowanie")
+    #     print("3.Exit")
+    #     x = input()
+    #     if(x == '1'):
+    #         print('Podaj key')
+    #         key = input()
+    #         print('Podaj source')
+    #         source = input()
+    #         print('Podaj destination')
+    #         destination = input()
+    #         des = DES(source, destination)
+    #         des.run(decrypt=False, key=key)
+    #         print('Done')
+    #
+    #     elif(x == '2'):
+    #         print('Podaj key')
+    #         key = input()
+    #         print('Podaj source')
+    #         source = input()
+    #         print('Podaj destination')
+    #         destination = input()
+    #         des = DES(source, destination)
+    #         des.run(decrypt=True, key=key)
+    #         print('Done')
+    #     elif (x == '3'):
+    #         break
+
