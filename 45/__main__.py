@@ -19,6 +19,7 @@ from PyQt5.QtWidgets import QApplication
 from views import CAutoKeyView, LFSRView, MainView, SSCView
 import sys
 
+
 app = QApplication(sys.argv)
 # window = LFSRView()
 #window = CAutoKeyView()

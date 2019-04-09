@@ -1,3 +1,4 @@
+import os
 class DES:
     PC1 = [57, 49, 41, 33, 25, 17, 9,
            1, 58, 50, 42, 34, 26, 18,
@@ -116,6 +117,11 @@ class DES:
 
     def run(self, decrypt, key):
         with open(self.source_file_name, "rb") as source_file, open(self.destination_file_name, "wb") as destination_file:
+            old_file_position = source_file.tell()
+            source_file.seek(0, os.SEEK_END)
+            file_size = source_file.tell()
+            source_file.seek(old_file_position, os.SEEK_SET)
+
             while 1:
                 byte_s = source_file.read(32768)
 
@@ -124,10 +130,11 @@ class DES:
 
                 binary_source_block = self.hex_to_binary(byte_s)
                 binary_destination_block = []
-
-                if len(binary_source_block) % 8:
+                # TODO sprawdzic czy dziala dla roznych rozmiarow pliku
+                if source_file.tell() == file_size and not decrypt:
                     missing = len(binary_source_block) % 8
-                    for i in range(8-missing):
+                    binary_source_block.append('10000000')
+                    for i in range(7-missing):
                         binary_source_block.append("00000000")
 
                 for i in range(0, len(binary_source_block), 8):
@@ -138,7 +145,19 @@ class DES:
                     output_64_bit = self.des_algorithm(input_64_bit, subkeys, decrypt)
                     for j in range(8):
                         binary_destination_block.append(output_64_bit[j*8:j*8+8])
-                
+
+                if source_file.tell() == file_size and decrypt:
+                    found = False
+                    for i in range(len(binary_destination_block)-1, -1, -1):
+                        if found:
+                            break
+                        for j in range(7, -1, -1):
+
+                            if binary_destination_block[i][j] == '1':
+                                found = True
+                                binary_destination_block = binary_destination_block[:i]
+                                break
+
                 byte_output = self.binary_to_hex(binary_destination_block)
 
                 for byte in byte_output:
@@ -228,42 +247,36 @@ class DES:
 
 
 if __name__ == "__main__":
-    #"E0FAE0FEB1F4F8FE"
-    #0E329232EA6D0D73
 
-    des = DES('in.txt', 'inout.txt')
-    des.run(decrypt=False, key='133457799BBCDFF1')
+    x='0'
+    while (1):
 
+        print("DES")
+        print("1.Szyfrowanie")
+        print("2.Deszyfrowanie")
+        print("3.Exit")
+        x = input()
+        if(x == '1'):
+            print('Podaj key')
+            key = input()
+            print('Podaj source')
+            source = input()
+            print('Podaj destination')
+            destination = input()
+            des = DES(source, destination)
+            des.run(decrypt=False, key=key)
+            print('Done')
 
-    # x='0'
-    # while (1):
-    #
-    #     print("DES")
-    #     print("1.Szyfrowanie")
-    #     print("2.Deszyfrowanie")
-    #     print("3.Exit")
-    #     x = input()
-    #     if(x == '1'):
-    #         print('Podaj key')
-    #         key = input()
-    #         print('Podaj source')
-    #         source = input()
-    #         print('Podaj destination')
-    #         destination = input()
-    #         des = DES(source, destination)
-    #         des.run(decrypt=False, key=key)
-    #         print('Done')
-    #
-    #     elif(x == '2'):
-    #         print('Podaj key')
-    #         key = input()
-    #         print('Podaj source')
-    #         source = input()
-    #         print('Podaj destination')
-    #         destination = input()
-    #         des = DES(source, destination)
-    #         des.run(decrypt=True, key=key)
-    #         print('Done')
-    #     elif (x == '3'):
-    #         break
+        elif(x == '2'):
+            print('Podaj key')
+            key = input()
+            print('Podaj source')
+            source = input()
+            print('Podaj destination')
+            destination = input()
+            des = DES(source, destination)
+            des.run(decrypt=True, key=key)
+            print('Done')
+        elif (x == '3'):
+            break
 
